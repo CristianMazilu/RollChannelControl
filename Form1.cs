@@ -99,7 +99,7 @@ namespace RollChannelControl
         
         private void EvaluateXDotDot()
         {
-            setAbruptness = Math.Abs(DeltaXDot) > 0.1 ?
+            setAbruptness = Math.Abs(DeltaXDot) > 0.01 ?
                 (DeltaXDot > 0 ? maxAbruptness : -maxAbruptness):
                 0;
             XDotDot += Abruptness;
@@ -107,7 +107,7 @@ namespace RollChannelControl
         
         private void EvaluateXDotDotDot()
         {
-            Abruptness = Math.Abs(DeltaXDotDot) > 0.05 ?
+            Abruptness = Math.Abs(DeltaXDotDot) > 0.005 ?
                 (DeltaXDotDot > 0 ? AbruptnessCoefficient : -AbruptnessCoefficient):
                 0;
         }
