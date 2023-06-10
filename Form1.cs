@@ -9,7 +9,10 @@ namespace RollChannelControl
     {
         private readonly ChartValues<double> _chartValues;
         private readonly Timer _timer;
-        private readonly double Abruptness = 0.2;
+        private readonly double maxAbruptness = 0.2;
+        private double setAbruptness;
+        private double Abruptness;
+        private double AbruptnessCoefficient = 0.01;
         private double X;
         private double XDotIn;
         private double XDotOut;
@@ -20,6 +23,14 @@ namespace RollChannelControl
             get
             {
                 return XDotIn - XDotOut;
+            }
+        }
+        
+        private double DeltaXDotDot
+        {
+            get
+            {
+                return setAbruptness - XDotDot;
             }
         }
 
@@ -59,7 +70,23 @@ namespace RollChannelControl
                 MessageBox.Show("Invalid input. Please enter a valid number.");
             }
         }
-        
+
+        private void TimerOnTick(object sender, EventArgs eventArgs)
+        {
+            EvaluateXDotDotDot();
+            EvaluateXDotDot();
+            EvaluateXDotOut();
+            EvaluateX();
+            _chartValues.Add(XDotOut);
+            if (_chartValues.Count > 100)
+                _chartValues.RemoveAt(0);
+            
+            Console.Write("Next:");
+            System.Diagnostics.Debug.WriteLine("{0, -10:F2} {1, -10:F2} {2, -10:F2}", X, XDotOut, XDotDot);
+
+            cartesianChart1.Update(false, true);
+        }
+
         private void EvaluateX()
         {
             X += XDotOut;
@@ -69,26 +96,19 @@ namespace RollChannelControl
         {
             XDotOut += XDotDot;
         }
-
-        private void TimerOnTick(object sender, EventArgs eventArgs)
-        {
-            EvaluateXDotDot();
-            EvaluateXDotOut();
-            EvaluateX();
-            _chartValues.Add(XDotOut);
-            if (_chartValues.Count > 50)
-                _chartValues.RemoveAt(0);
-            
-            Console.Write("Next:");
-            System.Diagnostics.Debug.WriteLine("{0, -10:F2} {1, -10:F2} {2, -10:F2}", X, XDotOut, XDotDot);
-
-            cartesianChart1.Update(false, true);
-        }
-
+        
         private void EvaluateXDotDot()
         {
-            XDotDot = Math.Abs(DeltaXDot) > 0.2 ?
-                (DeltaXDot > 0 ? Abruptness : -Abruptness):
+            setAbruptness = Math.Abs(DeltaXDot) > 0.1 ?
+                (DeltaXDot > 0 ? maxAbruptness : -maxAbruptness):
+                0;
+            XDotDot += Abruptness;
+        }
+        
+        private void EvaluateXDotDotDot()
+        {
+            Abruptness = Math.Abs(DeltaXDotDot) > 0.05 ?
+                (DeltaXDotDot > 0 ? AbruptnessCoefficient : -AbruptnessCoefficient):
                 0;
         }
     }
