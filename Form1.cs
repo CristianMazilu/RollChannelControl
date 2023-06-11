@@ -11,15 +11,17 @@ namespace RollChannelControl
     {
         private readonly ChartValues<double> _chartValues;
         private readonly Timer _timer;
-        private readonly double maxAbruptness = 0.2;
-        private double setAbruptness;
-        private double Abruptness;
-        private double AbruptnessCoefficient = 0.01;
         private double XDotIntegral;
         private double X;
         private double XDotIn;
         private double XDotOut;
         private double XDotDot;
+        private double PreviousXDotDot = 0;
+        private double DeltaXDotDot;
+        
+        private double Kp = 0.25;
+        private double Ki = 0;
+        private double Kd = 0.1;
 
         private double DeltaXDot
         {
@@ -28,17 +30,6 @@ namespace RollChannelControl
                 return XDotIn - XDotOut;
             }
         }
-        
-        private double DeltaXDotDot
-        {
-            get
-            {
-                return setAbruptness - XDotDot;
-            }
-        }
-        
-        private Queue<double> DeltaXDotQueue = new Queue<double>();
-        
 
         public Form1()
         {
@@ -79,12 +70,11 @@ namespace RollChannelControl
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
-            EvaluateXDotDotDot();
             EvaluateXDotIntegral();
             EvaluateXDotDot();
             EvaluateXDotOut();
             EvaluateX();
-            _chartValues.Add(XDotOut);
+            _chartValues.Add(XDotDot);
             if (_chartValues.Count > 100)
                 _chartValues.RemoveAt(0);
             
@@ -96,14 +86,7 @@ namespace RollChannelControl
 
         private void EvaluateXDotIntegral()
         {
-            DeltaXDotQueue.Enqueue(DeltaXDot);
-            if (DeltaXDotQueue.Count > 10)
-                DeltaXDotQueue.Dequeue();
-            
-            for (int i = 0; i < DeltaXDotQueue.Count; i++)
-            {
-                XDotIntegral += DeltaXDotQueue.ElementAt(i) * Math.Exp(-i);
-            }
+            XDotIntegral += DeltaXDot;
         }
 
         private void EvaluateX()
@@ -118,17 +101,14 @@ namespace RollChannelControl
         
         private void EvaluateXDotDot()
         {
-            setAbruptness = Math.Abs(DeltaXDot) > 0.01 ?
-                (DeltaXDot > 0 ? maxAbruptness : -maxAbruptness):
-                0;
-            XDotDot += Abruptness;
+            XDotDot = Kp * DeltaXDot + Ki * XDotIntegral + Kd * DeltaXDotDot;
         }
-        
+
+        // Evaluate the derivative of XDotDot
         private void EvaluateXDotDotDot()
         {
-            Abruptness = Math.Abs(DeltaXDotDot) > 0.005 ?
-                (DeltaXDotDot > 0 ? AbruptnessCoefficient : -AbruptnessCoefficient):
-                0;
+            DeltaXDotDot = XDotDot - PreviousXDotDot;
+            PreviousXDotDot = XDotDot;
         }
     }
 }
