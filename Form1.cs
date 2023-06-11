@@ -1,6 +1,8 @@
 ﻿using LiveCharts;
 using LiveCharts.Wpf;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace RollChannelControl
@@ -13,6 +15,7 @@ namespace RollChannelControl
         private double setAbruptness;
         private double Abruptness;
         private double AbruptnessCoefficient = 0.01;
+        private double XDotIntegral;
         private double X;
         private double XDotIn;
         private double XDotOut;
@@ -33,6 +36,9 @@ namespace RollChannelControl
                 return setAbruptness - XDotDot;
             }
         }
+        
+        private Queue<double> DeltaXDotQueue = new Queue<double>();
+        
 
         public Form1()
         {
@@ -74,6 +80,7 @@ namespace RollChannelControl
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
             EvaluateXDotDotDot();
+            EvaluateXDotIntegral();
             EvaluateXDotDot();
             EvaluateXDotOut();
             EvaluateX();
@@ -85,6 +92,18 @@ namespace RollChannelControl
             System.Diagnostics.Debug.WriteLine("{0, -10:F2} {1, -10:F2} {2, -10:F2}", X, XDotOut, XDotDot);
 
             cartesianChart1.Update(false, true);
+        }
+
+        private void EvaluateXDotIntegral()
+        {
+            DeltaXDotQueue.Enqueue(DeltaXDot);
+            if (DeltaXDotQueue.Count > 10)
+                DeltaXDotQueue.Dequeue();
+            
+            for (int i = 0; i < DeltaXDotQueue.Count; i++)
+            {
+                XDotIntegral += DeltaXDotQueue.ElementAt(i) * Math.Exp(-i);
+            }
         }
 
         private void EvaluateX()
