@@ -11,17 +11,18 @@ namespace RollChannelControl
     {
         private readonly ChartValues<double> _chartValues;
         private readonly Timer _timer;
-        private double XDotIntegral;
         private double X;
+        private double XDotIntegral;
         private double XDotIn;
         private double XDotOut;
         private double XDotDot;
-        private double PreviousXDotDot = 0;
         private double DeltaXDotDot;
+        private double XDotDotSetPoint;
+        private double DeltaXDotDotDot;
         
-        private double Kp = 0.25;
-        private double Ki = 0;
-        private double Kd = 0.1;
+        private double Kp = 0.1;
+        private double Ki = 0.0015;
+        private double maxAngularAcceleration = 0.075;
 
         private double DeltaXDot
         {
@@ -70,11 +71,12 @@ namespace RollChannelControl
 
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
-            EvaluateXDotIntegral();
+            EvaluateXDotDotDot();
             EvaluateXDotDot();
+            EvaluateIntegral();
             EvaluateXDotOut();
             EvaluateX();
-            _chartValues.Add(XDotDot);
+            _chartValues.Add(XDotOut);
             if (_chartValues.Count > 100)
                 _chartValues.RemoveAt(0);
             
@@ -84,7 +86,7 @@ namespace RollChannelControl
             cartesianChart1.Update(false, true);
         }
 
-        private void EvaluateXDotIntegral()
+        private void EvaluateIntegral()
         {
             XDotIntegral += DeltaXDot;
         }
@@ -101,14 +103,16 @@ namespace RollChannelControl
         
         private void EvaluateXDotDot()
         {
-            XDotDot = Kp * DeltaXDot + Ki * XDotIntegral + Kd * DeltaXDotDot;
+            XDotDotSetPoint = Kp * DeltaXDot + Ki * XDotIntegral;
+            XDotDot += DeltaXDotDot;
         }
-
-        // Evaluate the derivative of XDotDot
+        
         private void EvaluateXDotDotDot()
         {
-            DeltaXDotDot = XDotDot - PreviousXDotDot;
-            PreviousXDotDot = XDotDot;
+            DeltaXDotDot = Math.Min(XDotDotSetPoint - XDotDot, maxAngularAcceleration);
+            DeltaXDotDot = Math.Abs(XDotDotSetPoint - XDotDot) > maxAngularAcceleration
+                ? Math.Sign(XDotDotSetPoint - XDotDot) * maxAngularAcceleration
+                : XDotDotSetPoint - XDotDot;
         }
     }
 }
