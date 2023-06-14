@@ -18,11 +18,14 @@ namespace RollChannelControl
         private double XDotDot;
         private double DeltaXDotDot;
         private double XDotDotSetPoint;
-        private double DeltaXDotDotDot;
+        private double XDotDerivative;
         
-        private double Kp = 0.1;
-        private double Ki = 0.0015;
-        private double maxAngularAcceleration = 0.075;
+        private double Kp = 0.05; // Proportional gain
+        private double Ki = 0.004; // Integral gain
+        private double Kd = 0.15; // Derivative gain
+        private double DerivativeSampleSize = 2; // Number of samples to use for derivative calculation
+        private double IntegralSampleSize = 5; // Number of samples to use for integral calculation
+        private double maxAngularJerk = 0.4; // Maximum angular jerk (deg/s^3) that can be expected of the aircraft
 
         private double DeltaXDot
         {
@@ -31,6 +34,9 @@ namespace RollChannelControl
                 return XDotIn - XDotOut;
             }
         }
+        
+        private Queue<double> XDotDerivativeQueue = new Queue<double>(); // Queue of XDotDerivative samples
+        private Queue<double> XDotIntegralQueue = new Queue<double>(); // Queue of XDotIntegral samples
 
         public Form1()
         {
@@ -72,11 +78,12 @@ namespace RollChannelControl
         private void TimerOnTick(object sender, EventArgs eventArgs)
         {
             EvaluateXDotDotDot();
+            EvaluateXDotDerivative();
             EvaluateXDotDot();
             EvaluateIntegral();
             EvaluateXDotOut();
             EvaluateX();
-            _chartValues.Add(XDotOut);
+            _chartValues.Add(DeltaXDot);
             if (_chartValues.Count > 100)
                 _chartValues.RemoveAt(0);
             
@@ -84,11 +91,6 @@ namespace RollChannelControl
             System.Diagnostics.Debug.WriteLine("{0, -10:F2} {1, -10:F2} {2, -10:F2}", X, XDotOut, XDotDot);
 
             cartesianChart1.Update(false, true);
-        }
-
-        private void EvaluateIntegral()
-        {
-            XDotIntegral += DeltaXDot;
         }
 
         private void EvaluateX()
@@ -101,17 +103,32 @@ namespace RollChannelControl
             XDotOut += XDotDot;
         }
         
+        private void EvaluateXDotDerivative()
+        {
+            XDotDerivativeQueue.Enqueue(DeltaXDot);
+            if (XDotDerivativeQueue.Count > DerivativeSampleSize)
+                XDotDerivativeQueue.Dequeue();
+            XDotDerivative = XDotDerivativeQueue.Average();
+        }
+        
+        private void EvaluateIntegral()
+        {
+            XDotIntegralQueue.Enqueue(DeltaXDot);
+            if (XDotIntegralQueue.Count > IntegralSampleSize)
+                XDotIntegralQueue.Dequeue();
+            XDotIntegral = XDotIntegralQueue.Sum();
+        }
+
         private void EvaluateXDotDot()
         {
-            XDotDotSetPoint = Kp * DeltaXDot + Ki * XDotIntegral;
+            XDotDotSetPoint = Kp * DeltaXDot + Ki * XDotIntegral + Kd * XDotDerivative;
             XDotDot += DeltaXDotDot;
         }
         
         private void EvaluateXDotDotDot()
         {
-            DeltaXDotDot = Math.Min(XDotDotSetPoint - XDotDot, maxAngularAcceleration);
-            DeltaXDotDot = Math.Abs(XDotDotSetPoint - XDotDot) > maxAngularAcceleration
-                ? Math.Sign(XDotDotSetPoint - XDotDot) * maxAngularAcceleration
+            DeltaXDotDot = Math.Abs(XDotDotSetPoint - XDotDot) > maxAngularJerk
+                ? Math.Sign(XDotDotSetPoint - XDotDot) * maxAngularJerk
                 : XDotDotSetPoint - XDotDot;
         }
     }
