@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
 
 namespace RollChannelControl
 {
     public partial class Form1 : Form
     {
-        private readonly ChartValues<double> _chartValues;
+        private readonly ChartValues<double> rollRateChartValues;
+        private readonly ChartValues<double> accelerationRateChartValues;
         private readonly Timer _timer;
         private double X;
         private double XDotIntegral;
@@ -42,14 +44,25 @@ namespace RollChannelControl
         {
             InitializeComponent();
             
-            cartesianChart1.DisableAnimations = true;
+            rollRateCartesianChart.DisableAnimations = true;
             
-            cartesianChart1.Series = new LiveCharts.SeriesCollection
+            rollRateCartesianChart.Series = new LiveCharts.SeriesCollection
             {
                 new LineSeries
                 {
-                    Title = "X value",
-                    Values = _chartValues = new ChartValues<double>(),
+                    Title = "Roll Rate",
+                    Values = rollRateChartValues = new ChartValues<double>(),
+                }
+            };
+            
+            accelerationRateCartesianChart.DisableAnimations = true;
+            
+            accelerationRateCartesianChart.Series = new LiveCharts.SeriesCollection
+            {
+                new LineSeries
+                {
+                    Title = "Acceleration Rate",
+                    Values = accelerationRateChartValues = new ChartValues<double>(),
                 }
             };
             
@@ -83,14 +96,18 @@ namespace RollChannelControl
             EvaluateIntegral();
             EvaluateXDotOut();
             EvaluateX();
-            _chartValues.Add(DeltaXDot);
-            if (_chartValues.Count > 100)
-                _chartValues.RemoveAt(0);
+            rollRateChartValues.Add(XDotOut);
+            if (rollRateChartValues.Count > 100)
+                rollRateChartValues.RemoveAt(0);
+            
+            accelerationRateChartValues.Add(DeltaXDot);
+            if (accelerationRateChartValues.Count > 100)
+                accelerationRateChartValues.RemoveAt(0);
             
             Console.Write("Next:");
             System.Diagnostics.Debug.WriteLine("{0, -10:F2} {1, -10:F2} {2, -10:F2}", X, XDotOut, XDotDot);
 
-            cartesianChart1.Update(false, true);
+            rollRateCartesianChart.Update(false, true);
         }
 
         private void EvaluateX()
