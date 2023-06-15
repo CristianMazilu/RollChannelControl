@@ -12,6 +12,8 @@ namespace RollChannelControl
     {
         private readonly ChartValues<double> rollRateChartValues;
         private readonly ChartValues<double> accelerationRateChartValues;
+        private readonly ChartValues<double> jerkRateChartValues;
+
         private readonly Timer _timer;
         private double X;
         private double XDotIntegral;
@@ -54,18 +56,23 @@ namespace RollChannelControl
                     Values = rollRateChartValues = new ChartValues<double>(),
                 }
             };
-            
+
             accelerationRateCartesianChart.DisableAnimations = true;
-            
+
             accelerationRateCartesianChart.Series = new LiveCharts.SeriesCollection
             {
                 new LineSeries
                 {
-                    Title = "Acceleration Rate",
+                    Title = "Delta XDot",
                     Values = accelerationRateChartValues = new ChartValues<double>(),
+                },
+                new LineSeries
+                {
+                    Title = "Delta XDotDot",
+                    Values = jerkRateChartValues = new ChartValues<double>(),
                 }
             };
-            
+
             _timer = new Timer { Interval = 50 };
             _timer.Tick += TimerOnTick;
             
@@ -101,8 +108,13 @@ namespace RollChannelControl
                 rollRateChartValues.RemoveAt(0);
             
             accelerationRateChartValues.Add(DeltaXDot);
+            jerkRateChartValues.Add(DeltaXDotDot * 7);
+            
             if (accelerationRateChartValues.Count > 100)
                 accelerationRateChartValues.RemoveAt(0);
+            
+            if (jerkRateChartValues.Count > 100)
+                jerkRateChartValues.RemoveAt(0);
             
             Console.Write("Next:");
             System.Diagnostics.Debug.WriteLine("{0, -10:F2} {1, -10:F2} {2, -10:F2}", X, XDotOut, XDotDot);
@@ -147,6 +159,11 @@ namespace RollChannelControl
             DeltaXDotDot = Math.Abs(XDotDotSetPoint - XDotDot) > maxAngularJerk
                 ? Math.Sign(XDotDotSetPoint - XDotDot) * maxAngularJerk
                 : XDotDotSetPoint - XDotDot;
+        }
+
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            XDotIn = trackBar1.Value;
         }
     }
 }

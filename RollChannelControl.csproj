@@ -46,6 +46,9 @@
         <Reference Include="PresentationFramework" />
         <Reference Include="System" />
         <Reference Include="System.Core" />
+        <Reference Include="System.Data.Entity">
+          <HintPath>..\..\..\..\WINDOWS\assembly\GAC_MSIL\System.Data.Entity\3.5.0.0__b77a5c561934e089\System.Data.Entity.dll</HintPath>
+        </Reference>
         <Reference Include="System.Xaml" />
         <Reference Include="System.Xml.Linq" />
         <Reference Include="System.Data.DataSetExtensions" />

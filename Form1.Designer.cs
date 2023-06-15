@@ -39,6 +39,10 @@ namespace RollChannelControl
             this.accelerationRateCartesianChart = new LiveCharts.WinForms.CartesianChart();
             this.buttonAdd = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.trackBar1 = new System.Windows.Forms.TrackBar();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
             // 
             // rollRateCartesianChart
@@ -75,11 +79,38 @@ namespace RollChannelControl
             this.textBox1.Size = new System.Drawing.Size(256, 20);
             this.textBox1.TabIndex = 1;
             // 
+            // label1
+            // 
+            this.label1.Location = new System.Drawing.Point(36, 14);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(89, 17);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "Roll Rate Chart";
+            // 
+            // label2
+            // 
+            this.label2.Location = new System.Drawing.Point(36, 388);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(217, 29);
+            this.label2.TabIndex = 4;
+            this.label2.Text = "Acceleration Rate Chart (blue)\r\nJerk Rate Chart (red, scaled up for visibility)";
+            // 
+            // trackBar1
+            // 
+            this.trackBar1.Location = new System.Drawing.Point(736, 359);
+            this.trackBar1.Maximum = 15;
+            this.trackBar1.Minimum = -15;
+            this.trackBar1.Name = "trackBar1";
+            this.trackBar1.Size = new System.Drawing.Size(254, 45);
+            this.trackBar1.TabIndex = 5;
+            this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
+            // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1003, 790);
+            this.Controls.Add(this.trackBar1);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonAdd);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.rollRateCartesianChart);
@@ -87,9 +118,16 @@ namespace RollChannelControl
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "RollChannelControl";
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
         }
+
+        private System.Windows.Forms.TrackBar trackBar1;
+
+        private System.Windows.Forms.Label label2;
+
+        private System.Windows.Forms.Label label1;
 
         #endregion
     }
