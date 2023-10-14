@@ -5,6 +5,7 @@ This is a small but powerful PID (Proportional, Integral, Derivative) controller
 
 ## Theoretical concepts
 The modelled controller aims to stabilize the roll rate of an aircraft (Airbus: gamma dot) to a value proportional to the deviation of the side-stick, by driving the aielron positions. Below is an approximation of the expected behavior of roll channel right after sidestick deflection:
+
 ![image](https://github.com/CristianMazilu/RollChannelControl/assets/43795897/1ee569eb-56ac-42e8-96ba-3aab3131ba21)
 
 
