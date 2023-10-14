@@ -15,6 +15,12 @@ The code provided is written in C# and primarily relies on the LiveCharts.Wpf li
 ## Usage
 
 This controller's core is contained in the `Form1` class. Here's a brief overview of its most important elements:
+- The input is a simple left-right slider representing the aircraft side-stick deflection.
+- The top graph represents the expected roll rate of the aircraft (gamma dot).
+- The bottom graph represents the deviation of the actual roll rate from the one set by the sidestick deflection (blue), and the deviation of the set roll acceleration from the one set by the PID calculations (red).
+
+![image](https://github.com/CristianMazilu/RollChannelControl/assets/43795897/d97b40ed-aa09-46a4-96a4-d75b65c9c19c)
+
 
 ### Class Variables
 - `X`: The roll rate (deg/s) of the aircraft.
