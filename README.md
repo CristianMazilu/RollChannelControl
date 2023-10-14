@@ -3,6 +3,11 @@
 ## Description
 This is a small but powerful PID (Proportional, Integral, Derivative) controller specifically designed and adapted for an airplane simulation model. It's primarily used for controlling the roll rate of the aircraft, which is crucial in stabilizing the aircraft's bank rotation through the movement of the ailerons. In addition to the usual PID terms, it incorporates the third derivative of the bank angle (jerk) to improve the realism and relevance of the simulator.
 
+## Theoretical concepts
+The modelled controller aims to stabilize the roll rate of an aircraft (Airbus: gamma dot) to a value proportional to the deviation of the side-stick, by driving the aielron positions. Below is an approximation of the expected behavior of roll channel right after sidestick deflection:
+![image](https://github.com/CristianMazilu/RollChannelControl/assets/43795897/1ee569eb-56ac-42e8-96ba-3aab3131ba21)
+
+
 ## Installation
 The code provided is written in C# and primarily relies on the LiveCharts.Wpf library for graphical representation. Make sure you have the necessary packages installed in your development environment.
 
